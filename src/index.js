@@ -16,49 +16,45 @@ const refs = {
   loadMore: document.querySelector('.load-more'),
 };
 
-refs.form.addEventListener('submit', onSubmit);
+refs.form.addEventListener('submit', onSubmitImagesSearch);
 refs.loadMore.addEventListener('click', onBtnLoadMore);
 
-function onSubmit(e) {
+function onSubmitImagesSearch(e) {
   e.preventDefault();
 
-  const valueSearch = e.target.searchQuery.value;
-
-  fatchImage.pageReset();
-  fatchImage.resetHits();
-
-  delitCards();
+  const valueSearch = e.target.searchQuery.value.trim();
+  refs.loadMore.hidden = true;
   fatchImage.query = valueSearch;
   if (!valueSearch) {
-    refs.loadMore.hidden = true;
     Notiflix.Notify.info(MESSAGE_INFORM);
+    deletGalleryMarcup()
     return;
   }
-  renderGalleryCard();
-  
+  fatchImage.pageReset();
+  deletGalleryMarcup();
+  addGalleryCardsMarcup();
+  foundImeges();
 }
 
 function onBtnLoadMore() {
+  refs.loadMore.hidden = true;
   fatchImage.pageIncrement();
-  fatchImage.apdateHits(fatchImage.per_page);
-  renderGalleryCard();
+  addGalleryCardsMarcup();
 }
 
-async function renderGalleryCard() {
+async function addGalleryCardsMarcup() {
   try {
-    const arrPhoto = await fatchImage.searchImg();
+    const arrPhoto = await fatchImage.searchImg().then(data => data.hits);
     if (arrPhoto.length === 0) {
       refs.loadMore.hidden = true;
       Notiflix.Notify.info(MESSAGE_INFORM);
       return;
     }
+    addCardPhoto(arrPhoto);
+    lightbox.refresh();
     if (arrPhoto.length > 39) {
       refs.loadMore.hidden = false;
     }
-    addCardPhoto(arrPhoto);
-    Notiflix.Notify.info(`Hooray! We found ${fatchImage.totalHits} images.`);
-    lightbox.refresh()
-     
   } catch (error) {
     refs.loadMore.hidden = true;
     Notiflix.Notify.failure('Ooops. The server is not responding.');
@@ -76,7 +72,7 @@ function addCardPhoto(arr) {
       tags,
       largeImageURL,
     }) => {
-      const galleryCard = `<div class="photo-card">
+      const galleryCards = `<div class="photo-card">
       <div class="wraper"><a href="${largeImageURL}"><img src="${webformatURL}" alt="${tags}" loading="lazy" width ="270px"/></a></div>
       <div class="info">
         <div class="info-item">
@@ -97,12 +93,20 @@ function addCardPhoto(arr) {
         </div>
       </div>
     </div>`;
-      refs.gallery.insertAdjacentHTML('beforeend', galleryCard);
+      refs.gallery.insertAdjacentHTML('beforeend', galleryCards);
     }
   );
- 
 }
 
-function delitCards() {
+function deletGalleryMarcup() {
   refs.gallery.innerHTML = '';
+}
+
+async function foundImeges() {
+  const totalHitsValue = await fatchImage
+    .searchImg()
+    .then(data => data.totalHits);
+  if (totalHitsValue > 0) {
+    Notiflix.Notify.info(`Hooray! We found ${totalHitsValue} images.`);
+  }
 }

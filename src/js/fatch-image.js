@@ -8,7 +8,6 @@ export default class fatchImages {
     this.query = '';
     this.page = 1;
     this.per_page = 40;
-    this.totalHits = 0;
   }
   get query() {
     return this.value;
@@ -27,10 +26,7 @@ export default class fatchImages {
         per_page: this.per_page,
       },
     });
-    if(this.totalHits === 0) {
-      this.totalHits = response.data.totalHits;
-    }
-    return await response.data.hits;
+    return await response.data;
   }
   pageIncrement() {
     this.page += 1;
@@ -38,10 +34,5 @@ export default class fatchImages {
   pageReset() {
     this.page = 1;
   }
-  apdateHits(amountPage) {
-  this.totalHits -= amountPage
-  }
-  resetHits() {
-    this.totalHits = 0
-  }
+
 }
