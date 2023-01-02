@@ -27,13 +27,12 @@ function onSubmitImagesSearch(e) {
   fatchImage.query = valueSearch;
   if (!valueSearch) {
     Notiflix.Notify.info(MESSAGE_INFORM);
-    deletGalleryMarcup()
+    deletGalleryMarcup();
     return;
   }
   fatchImage.pageReset();
   deletGalleryMarcup();
   addGalleryCardsMarcup();
-  foundImeges();
 }
 
 function onBtnLoadMore() {
@@ -44,11 +43,17 @@ function onBtnLoadMore() {
 
 async function addGalleryCardsMarcup() {
   try {
-    const arrPhoto = await fatchImage.searchImg().then(data => data.hits);
+    const data = await fatchImage.searchImg();
+    const arrPhoto = data.hits;
+    const totalHitsValue = data.totalHits;
+
     if (arrPhoto.length === 0) {
       refs.loadMore.hidden = true;
       Notiflix.Notify.info(MESSAGE_INFORM);
       return;
+    }
+    if (fatchImage.page === 1) {
+      Notiflix.Notify.info(`Hooray! We found ${totalHitsValue} images.`);
     }
     addCardPhoto(arrPhoto);
     lightbox.refresh();
@@ -100,13 +105,4 @@ function addCardPhoto(arr) {
 
 function deletGalleryMarcup() {
   refs.gallery.innerHTML = '';
-}
-
-async function foundImeges() {
-  const totalHitsValue = await fatchImage
-    .searchImg()
-    .then(data => data.totalHits);
-  if (totalHitsValue > 0) {
-    Notiflix.Notify.info(`Hooray! We found ${totalHitsValue} images.`);
-  }
 }
